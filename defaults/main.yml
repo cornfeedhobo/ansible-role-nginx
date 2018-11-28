@@ -1,0 +1,86 @@
+---
+
+nginx_install: false
+nginx_package_state: "present"
+nginx_packages: "{{ __nginx_packages }}"
+
+nginx_service: false
+nginx_service_name: "{{ __nginx_service_name }}"
+nginx_service_state: "started"
+nginx_service_enabled: true
+
+nginx_configure: false
+
+nginx_user: "{{ __nginx_user }}"
+nginx_group: "{{ __nginx_group }}"
+
+nginx_pidfile: "{{ __nginx_pidfile }}"
+
+nginx_log_dir: "{{ __nginx_log_dir }}"
+
+nginx_error_log: "{{ nginx_log_dir }}/error.log"
+nginx_access_log: "{{ nginx_log_dir }}/access.log"
+
+nginx_worker_processes: "auto"
+nginx_worker_connections: "1024"
+nginx_worker_multi_accept: "off"
+
+nginx_sendfile: "on"
+nginx_tcp_nopush: "on"
+nginx_tcp_nodelay: "on"
+
+nginx_keepalive_timeout: "65"
+nginx_keepalive_requests: "100"
+nginx_types_hash_max_size: "2048"
+
+nginx_log_format_main: >-
+    '$remote_addr - $remote_user [$time_local] "$request"
+    $status $body_bytes_sent "$http_referer"
+    "$http_user_agent" "$http_x_forwarded_for"'
+
+nginx_config_dir: "{{ __nginx_config_dir }}"
+nginx_config_path: "{{ nginx_config_dir }}/nginx.conf"
+
+nginx_mime_path: "{{ nginx_config_dir }}/mime.types"
+nginx_mime_extra: []
+## Example:
+# - regexp: "^\w*application/foobar.*$"
+#   line: "    application/foobar   zip;"
+#   state: "present"
+
+nginx_config:
+  - "user {{ nginx_user }}"
+  - "pid {{ nginx_pidfile }}"
+  - "error_log {{ nginx_error_log }} warn"
+  - "worker_processes {{ nginx_worker_processes }}"
+
+nginx_config_events:
+  - "worker_connections {{ nginx_worker_connections }}"
+  - "multi_accept {{ nginx_worker_multi_accept }}"
+
+nginx_config_http:
+  - "log_format main {{ nginx_log_format_main }}"
+  - "access_log  {{ nginx_access_log }} main"
+  - "sendfile {{ nginx_sendfile }}"
+  - "tcp_nopush {{ nginx_tcp_nopush }}"
+  - "tcp_nodelay {{ nginx_tcp_nodelay }}"
+  - "keepalive_timeout {{ nginx_keepalive_timeout }}"
+  - "keepalive_requests {{ nginx_keepalive_requests }}"
+  - "types_hash_max_size {{ nginx_types_hash_max_size }}"
+  - "include {{ nginx_mime_path }}"
+  - "default_type application/octet-stream"
+  - "include {{ nginx_vhost_dir }}/*.conf"
+
+nginx_config_http_extra: []
+
+nginx_vhost_dir: "{{ nginx_config_dir }}/conf.d"
+nginx_vhost_default: []
+nginx_vhost_upstream: []
+
+nginx_ssl_dir: "{{ nginx_config_dir }}/ssl"
+nginx_ssl_pairs: []
+## Example:
+# - name: ""
+#   key: ""
+#   crt: ""
+#   ca: ""

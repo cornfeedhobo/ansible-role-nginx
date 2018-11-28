@@ -1,0 +1,53 @@
+---
+
+- name: "Manage nginx package(s)"
+  become: true
+  package:
+    name: "{{ item }}"
+    state: "{{ nginx_package_state }}"
+  with_items: "{{ nginx_packages }}"
+
+
+- name: "Ensure the SSL directory exists"
+  become: true
+  file:
+    path: "{{ nginx_ssl_dir }}"
+    state: "directory"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
+    mode: "0700"
+  when: "nginx_ssl_pairs | length > 0"
+
+
+- name: "Manage the SSL keys"
+  become: true
+  no_log: true
+  copy:
+    content: "{{ item.key }}"
+    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.key"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
+    mode: "0600"
+  with_items: "{{ nginx_ssl_pairs }}"
+  when: "nginx_ssl_pairs | length > 0"
+  notify:
+    - "validate nginx config"
+    - "reload nginx"
+
+
+- name: "Manage the SSL certificates"
+  become: true
+  no_log: true
+  copy:
+    content: |
+        {{ item.crt }}
+        {{ item.ca}}
+    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.crt"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
+    mode: "0600"
+  with_items: "{{ nginx_ssl_pairs }}"
+  when: "nginx_ssl_pairs | length > 0"
+  notify:
+    - "validate nginx config"
+    - "reload nginx"

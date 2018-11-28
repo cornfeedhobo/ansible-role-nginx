@@ -1,0 +1,15 @@
+---
+
+- name: "validate nginx config"
+  become: true
+  command: "nginx -t"
+
+
+- name: "reload nginx"
+  become: true
+  service:
+    name: "{{ nginx_service_name }}"
+    state: "reloaded"
+  when:
+    - "nginx_service"
+    - "nginx_service_state == 'started'"

@@ -1,0 +1,15 @@
+---
+
+__nginx_packages: ["nginx"]
+
+__nginx_user: "nginx"
+
+__nginx_group: "nginx"
+
+__nginx_service_name: "nginx"
+
+__nginx_pidfile: "/var/run/nginx.pid"
+
+__nginx_log_dir: "/var/log/nginx"
+
+__nginx_config_dir: "/etc/nginx"
