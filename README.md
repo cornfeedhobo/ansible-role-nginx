@@ -18,7 +18,7 @@ Role Variables
 | `nginx_service_state` | `started"` |
 | `nginx_service_enabled` | `true` |
 | `nginx_configure` | `false` |
-| `nginx_user` | `{{ __nginx_user }}"` |
+| `nginx_owner` | `{{ __nginx_owner }}"` |
 | `nginx_group` | `{{ __nginx_group }}"` |
 | `nginx_pidfile` | `{{ __nginx_pidfile }}"` |
 | `nginx_log_dir` | `{{ __nginx_log_dir }}"` |
@@ -38,7 +38,7 @@ Role Variables
 | `nginx_config_path` | `{{ nginx_config_dir }}/nginx.conf"` |
 | `nginx_mime_path` | `{{ nginx_config_dir }}/mime.types"` |
 | `nginx_mime_extra` | `[]` |
-| `nginx_config` | <pre>- "user {{ nginx_user }}"<br/>- "pid {{ nginx_pidfile }}"<br/>- "error_log {{ nginx_error_log }} warn"<br/>- "worker_processes {{ nginx_worker_processes }}"</pre> |
+| `nginx_config` | <pre>- "user {{ nginx_owner }}"<br/>- "pid {{ nginx_pidfile }}"<br/>- "error_log {{ nginx_error_log }} warn"<br/>- "worker_processes {{ nginx_worker_processes }}"</pre> |
 | `nginx_config_events` | <pre>- "worker_connections {{ nginx_worker_connections }}"<br/>- "multi_accept {{ nginx_worker_multi_accept }}"</pre> |
 | `nginx_config_http` | <pre>- "log_format main {{ nginx_log_format_main }}"<br/>- "access_log  {{ nginx_access_log }} main"<br/>- "sendfile {{ nginx_sendfile }}"<br/>- "tcp_nopush {{ nginx_tcp_nopush }}"<br/>- "tcp_nodelay {{ nginx_tcp_nodelay }}"<br/>- "keepalive_timeout {{ nginx_keepalive_timeout }}"<br/>- "keepalive_requests {{ nginx_keepalive_requests }}"<br/>- "types_hash_max_size {{ nginx_types_hash_max_size }}"<br/>- "include {{ nginx_mime_path }}"<br/>- "default_type application/octet-stream"<br/>- "include {{ nginx_vhost_dir }}/*.conf"</pre> |
 | `nginx_config_http_extra` | `[]` |

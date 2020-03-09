@@ -1,12 +1,57 @@
 ---
 
+- name: "Ensure the SSL directory exists"
+  become: true
+  file:
+    path: "{{ nginx_ssl_dir }}"
+    state: "directory"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "0700"
+  when: "nginx_ssl_pairs | length > 0"
+
+
+- name: "Manage the SSL keys"
+  become: true
+  no_log: true
+  copy:
+    content: "{{ item.key }}"
+    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.key"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "0600"
+  with_items: "{{ nginx_ssl_pairs }}"
+  when: "nginx_ssl_pairs | length > 0"
+  notify:
+    - "validate nginx config"
+    - "reload nginx"
+
+
+- name: "Manage the SSL certificates"
+  become: true
+  no_log: true
+  copy:
+    content: |
+        {{ item.crt }}
+        {{ item.ca}}
+    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.crt"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "0600"
+  with_items: "{{ nginx_ssl_pairs }}"
+  when: "nginx_ssl_pairs | length > 0"
+  notify:
+    - "validate nginx config"
+    - "reload nginx"
+
+
 - name: "Manage custom mime types, if defined"
   become: true
   lineinfile: >-
     {{ item | combine({
       'dest': nginx_mime_path,
-      'owner': 'root',
-      'group': 'root',
+      'owner': nginx_owner,
+      'group': nginx_group,
       'mode': '0644',
       'insertbefore': '^}$'
       }) }}
@@ -21,8 +66,8 @@
   template:
     src: "nginx.conf.j2"
     dest: "{{ nginx_config_path }}"
-    owner: "root"
-    group: "root"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
     mode: "0644"
   notify:
     - "validate nginx config"
@@ -34,8 +79,8 @@
   template:
     src: "upstream.conf.j2"
     dest: "{{ nginx_vhost_dir }}/upstream.conf"
-    owner: "root"
-    group: "root"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
     mode: "0644"
   when: "nginx_vhost_upstream | length > 0"
   notify:
@@ -59,8 +104,8 @@
   template:
     src: "default.conf.j2"
     dest: "{{ nginx_vhost_dir }}/default.conf"
-    owner: "root"
-    group: "root"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
     mode: "0644"
   when: "nginx_vhost_default | length > 0"
   notify:

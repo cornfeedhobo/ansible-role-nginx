@@ -11,7 +11,7 @@ nginx_service_enabled: true
 
 nginx_configure: false
 
-nginx_user: "{{ __nginx_user }}"
+nginx_owner: "{{ __nginx_owner }}"
 nginx_group: "{{ __nginx_group }}"
 
 nginx_pidfile: "{{ __nginx_pidfile }}"
@@ -49,7 +49,7 @@ nginx_mime_extra: []
 #   state: "present"
 
 nginx_config:
-  - "user {{ nginx_user }}"
+  - "user {{ nginx_owner }}"
   - "pid {{ nginx_pidfile }}"
   - "error_log {{ nginx_error_log }} warn"
   - "worker_processes {{ nginx_worker_processes }}"

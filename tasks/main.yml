@@ -5,7 +5,11 @@
   tags: ["nginx", "nginx-install", "nginx-configure", "nginx-service"]
 
 
-- include_tasks: "install.yml"
+- name: "Manage nginx package(s)"
+  become: true
+  package:
+    name: "{{ nginx_packages | list }}"
+    state: "{{ nginx_package_state }}"
   when: "nginx_install"
   tags: ["nginx", "nginx-install"]
 
