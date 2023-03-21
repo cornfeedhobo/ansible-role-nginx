@@ -1,0 +1,31 @@
+---
+lint: |
+  set -e
+  flake8
+  yamllint .
+  ansible-lint
+dependency:
+  name: "galaxy"
+driver:
+  name: "docker"
+platforms:
+  -
+    name: "centos"
+    image: "quay.io/centos/centos:stream9"
+    pre_build_image: false
+  -
+    name: "fedora"
+    image: "registry.fedoraproject.org/fedora:rawhide"
+    pre_build_image: false
+  -
+    name: "ubuntu"
+    image: "ubuntu:latest"
+    pre_build_image: false
+provisioner:
+  name: "ansible"
+  config_options:
+    defaults:
+      interpreter_python: "/usr/bin/python3"
+      remote_tmp: "/tmp"
+verifier:
+  name: "ansible"

@@ -1,0 +1,19 @@
+---
+- name: "Converge"
+  hosts: "all"
+  tasks:
+    - name: "Include cornfeedhobo.nginx"
+      ansible.builtin.include_role:
+        name: "cornfeedhobo.nginx"
+      vars:
+        nginx_install: true
+        nginx_configure: true
+        nginx_vhosts:
+          default:
+            state: "present"
+            servers:
+              - server:
+                  - "server_name example.com"
+                  - "listen 0.0.0.0:80 default_server"
+                  - location /:
+                      - "root /usr/share/nginx/html"

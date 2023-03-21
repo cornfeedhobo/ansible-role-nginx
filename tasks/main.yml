@@ -1,27 +1,35 @@
 ---
 
-- name: "Include OS-specific variables"
-  include_vars: "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
-  tags: ["nginx", "nginx-install", "nginx-configure", "nginx-service"]
+-
+  name: "Include OS-specific variables"
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+  tags: ["nginx", "nginx-install", "nginx-ssl", "nginx-configure", "nginx-service"]
 
-
-- name: "Manage nginx package(s)"
+-
+  name: "Manage nginx package(s)"
   become: true
-  package:
+  ansible.builtin.package:
     name: "{{ nginx_packages | list }}"
     state: "{{ nginx_package_state }}"
   when: "nginx_install"
   tags: ["nginx", "nginx-install"]
 
+-
+  name: "SSL"
+  ansible.builtin.import_tasks: "ssl.yml"
+  when: "nginx_ssl"
+  tags: ["nginx", "nginx-ssl"]
 
-- include_tasks: "configure.yml"
+-
+  name: "Configure"
+  ansible.builtin.import_tasks: "configure.yml"
   when: "nginx_configure"
   tags: ["nginx", "nginx-configure"]
 
-
-- name: "Manage nginx service"
+-
+  name: "Manage nginx service"
   become: true
-  service:
+  ansible.builtin.service:
     name: "{{ nginx_service_name }}"
     state: "{{ nginx_service_state }}"
     enabled: "{{ nginx_service_enabled }}"

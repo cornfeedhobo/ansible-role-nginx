@@ -1,0 +1,62 @@
+---
+
+-
+  name: "Ensure the SSL directory exists"
+  become: true
+  ansible.builtin.file:
+    path: "{{ nginx_ssl_dir }}"
+    state: "directory"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "0700"
+
+-
+  name: "Manage the SSL keys"
+  become: true
+  no_log: true
+  ansible.builtin.copy:
+    content: "{{ item.key }}"
+    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.key"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "0600"
+  loop: "{{ nginx_ssl_pairs }}"
+  when:
+    - "nginx_ssl_pairs | length > 0"
+  notify:
+    - "Validate nginx config"
+    - "Reload nginx service"
+
+-
+  name: "Manage the SSL certificates"
+  become: true
+  no_log: true
+  ansible.builtin.copy:
+    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.crt"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "0600"
+    content: |
+      {{ item.crt }}
+      {{ item.ca}}
+  loop: "{{ nginx_ssl_pairs }}"
+  when:
+    - "nginx_ssl_pairs | length > 0"
+  notify:
+    - "Validate nginx config"
+    - "Reload nginx service"
+  tags:
+    - "skip_ansible_lint"
+
+-
+  name: "Manage dhparam.pem (this can take a long time)"
+  become: true
+  community.crypto.openssl_dhparam:
+    path: "{{ nginx_ssl_dhparam_path }}"
+    size: "{{ nginx_ssl_dhparam_size }}"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "0600"
+  timeout: 1800
+  when:
+    - "nginx_ssl_dhparam"

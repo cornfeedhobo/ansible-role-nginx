@@ -1,0 +1,47 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: "Verify"
+  hosts: "all"
+  gather_facts: false
+  tasks:
+    -
+      name: "Copy nginx.conf in check mode"
+      ansible.builtin.copy:
+        content: "{{ lookup('ansible.builtin.template', 'files/nginx.conf.j2') }}"
+        dest: "/etc/nginx/nginx.conf"
+        mode: "0644"
+      check_mode: true
+      diff: true
+      register: "_nginx_config"
+    -
+      name: "Print nginx.conf changes if requires"
+      ansible.builtin.debug:
+        msg: "{{ _nginx_config }}"
+      when:
+        - "_nginx_config.changed"
+      tags:
+        - "skip_ansible_lint"
+    -
+      name: "Copy conf.d in check mode"
+      ansible.builtin.copy:
+        src: "files/conf.d/"
+        dest: "/etc/nginx/conf.d/"
+        mode: "0644"
+      check_mode: true
+      diff: true
+      register: "_nginx_vhosts"
+    -
+      name: "Print conf.d changes if requires"
+      ansible.builtin.debug:
+        msg: "{{ _nginx_vhosts }}"
+      when:
+        - "_nginx_vhosts.changed"
+      tags:
+        - "skip_ansible_lint"
+    -
+      name: "Assertions"
+      ansible.builtin.assert:
+        that:
+          - "not _nginx_config.changed"
+          - "not _nginx_vhosts.changed"

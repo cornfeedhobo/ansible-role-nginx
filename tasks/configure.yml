@@ -1,124 +1,65 @@
 ---
 
-- name: "Ensure the SSL directory exists"
+-
+  name: "Manage custom mime types, if defined"
   become: true
-  file:
-    path: "{{ nginx_ssl_dir }}"
-    state: "directory"
-    owner: "{{ nginx_owner }}"
-    group: "{{ nginx_group }}"
-    mode: "0700"
-  when: "nginx_ssl_pairs | length > 0"
-
-
-- name: "Manage the SSL keys"
-  become: true
-  no_log: true
-  copy:
-    content: "{{ item.key }}"
-    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.key"
-    owner: "{{ nginx_owner }}"
-    group: "{{ nginx_group }}"
-    mode: "0600"
-  with_items: "{{ nginx_ssl_pairs }}"
-  when: "nginx_ssl_pairs | length > 0"
-  notify:
-    - "validate nginx config"
-    - "reload nginx"
-
-
-- name: "Manage the SSL certificates"
-  become: true
-  no_log: true
-  copy:
-    content: |
-        {{ item.crt }}
-        {{ item.ca}}
-    dest: "{{ nginx_ssl_dir }}/{{ item.name }}.crt"
-    owner: "{{ nginx_owner }}"
-    group: "{{ nginx_group }}"
-    mode: "0600"
-  with_items: "{{ nginx_ssl_pairs }}"
-  when: "nginx_ssl_pairs | length > 0"
-  notify:
-    - "validate nginx config"
-    - "reload nginx"
-
-
-- name: "Manage custom mime types, if defined"
-  become: true
-  lineinfile: >-
+  ansible.builtin.lineinfile: >-
     {{ item | combine({
-      'dest': nginx_mime_path,
+      'path': nginx_mime_path,
       'owner': nginx_owner,
       'group': nginx_group,
       'mode': '0644',
       'insertbefore': '^}$'
       }) }}
-  with_items: "{{ nginx_mime_extra | list }}"
-  when: "nginx_mime_extra | length > 0"
+  loop: "{{ nginx_mime_extra | list }}"
+  when:
+    - "nginx_mime_extra | length > 0"
   notify:
-    - "reload nginx"
+    - "Reload nginx service"
+  tags:
+    - "skip_ansible_lint"
 
-
-- name: "Manage nginx.conf"
+-
+  name: "Manage nginx.conf"
   become: true
-  template:
+  ansible.builtin.template:
     src: "nginx.conf.j2"
     dest: "{{ nginx_config_path }}"
     owner: "{{ nginx_owner }}"
     group: "{{ nginx_group }}"
     mode: "0644"
   notify:
-    - "validate nginx config"
-    - "reload nginx"
+    - "Validate nginx config"
+    - "Reload nginx service"
 
-
-- name: "Manage upstream.conf"
+-
+  name: "Manage vhost configs"
   become: true
-  template:
-    src: "upstream.conf.j2"
-    dest: "{{ nginx_vhost_dir }}/upstream.conf"
+  ansible.builtin.template:
+    src: "vhost.conf.j2"
+    dest: "{{ nginx_vhost_dir }}/{{ item.key }}.conf"
     owner: "{{ nginx_owner }}"
     group: "{{ nginx_group }}"
     mode: "0644"
-  when: "nginx_vhost_upstream | length > 0"
+  loop: "{{ nginx_vhosts | dict2items }}"
+  when:
+    - "item.value.state is not defined or item.value.state == 'present'"
   notify:
-    - "validate nginx config"
-    - "reload nginx"
+    - "Validate nginx config"
+    - "Reload nginx service"
 
-
-- name: "Remove upstream.conf, if not defined"
+-
+  name: "Manage vhost config state"
   become: true
-  file:
-    path: "{{ nginx_vhost_dir }}/upstream.conf"
-    state: "absent"
-  when: "nginx_vhost_upstream | length == 0"
-  notify:
-    - "validate nginx config"
-    - "reload nginx"
-
-
-- name: "Manage default.conf"
-  become: true
-  template:
-    src: "default.conf.j2"
-    dest: "{{ nginx_vhost_dir }}/default.conf"
+  ansible.builtin.file:
+    path: "{{ nginx_vhost_dir }}/{{ item.key }}.conf"
     owner: "{{ nginx_owner }}"
     group: "{{ nginx_group }}"
     mode: "0644"
-  when: "nginx_vhost_default | length > 0"
-  notify:
-    - "validate nginx config"
-    - "reload nginx"
-
-
-- name: "Remove default.conf if not defined"
-  become: true
-  file:
-    path: "{{ nginx_vhost_dir }}/default.conf"
     state: "absent"
-  when: "nginx_vhost_default | length == 0"
+  loop: "{{ nginx_vhosts | dict2items }}"
+  when:
+    - "item.value.state is defined and item.value.state == 'absent'"
   notify:
-    - "validate nginx config"
-    - "reload nginx"
+    - "Validate nginx config"
+    - "Reload nginx service"

@@ -1,13 +1,13 @@
 ---
 
-- name: "validate nginx config"
+- name: "Validate nginx config"
   become: true
-  command: "nginx -t"
+  ansible.builtin.command: "nginx -t"
 
 
-- name: "reload nginx"
+- name: "Reload nginx service"
   become: true
-  service:
+  ansible.builtin.service:
     name: "{{ nginx_service_name }}"
     state: "reloaded"
   when:

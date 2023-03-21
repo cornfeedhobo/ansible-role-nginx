@@ -2,10 +2,10 @@
 
 nginx_install: false
 nginx_package_state: "present"
-nginx_packages: "{{ __nginx_packages }}"
+nginx_packages: ["nginx"]
 
 nginx_service: false
-nginx_service_name: "{{ __nginx_service_name }}"
+nginx_service_name: "nginx"
 nginx_service_state: "started"
 nginx_service_enabled: true
 
@@ -14,9 +14,9 @@ nginx_configure: false
 nginx_owner: "{{ __nginx_owner }}"
 nginx_group: "{{ __nginx_group }}"
 
-nginx_pidfile: "{{ __nginx_pidfile }}"
+nginx_pidfile: "/run/nginx.pid"
 
-nginx_log_dir: "{{ __nginx_log_dir }}"
+nginx_log_dir: "/var/log/nginx"
 
 nginx_error_log: "{{ nginx_log_dir }}/error.log"
 nginx_access_log: "{{ nginx_log_dir }}/access.log"
@@ -38,7 +38,7 @@ nginx_log_format_main: >-
     $status $body_bytes_sent "$http_referer"
     "$http_user_agent" "$http_x_forwarded_for"'
 
-nginx_config_dir: "{{ __nginx_config_dir }}"
+nginx_config_dir: "/etc/nginx"
 nginx_config_path: "{{ nginx_config_dir }}/nginx.conf"
 
 nginx_mime_path: "{{ nginx_config_dir }}/mime.types"
@@ -74,10 +74,21 @@ nginx_config_http:
 nginx_config_http_extra: []
 
 nginx_vhost_dir: "{{ nginx_config_dir }}/conf.d"
-nginx_vhost_default: []
-nginx_vhost_upstream: []
+nginx_vhosts: {}
+  # default:
+  #   state: "present"
+  #   servers:
+  #     - servers:
+  #       - server_name example.com
+  #       - listen 0.0.0.0:80 default_server
+  #       - location /:
+  #         - root /usr/share/nginx/html
 
+nginx_ssl: false
 nginx_ssl_dir: "{{ nginx_config_dir }}/ssl"
+nginx_ssl_dhparam: false
+nginx_ssl_dhparam_size: "4096"
+nginx_ssl_dhparam_path: "{{ nginx_ssl_dir }}/dhparam.pem"
 nginx_ssl_pairs: []
 ## Example:
 # - name: ""

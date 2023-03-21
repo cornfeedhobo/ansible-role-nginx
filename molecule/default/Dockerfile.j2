@@ -1,0 +1,40 @@
+# {{ item.name }}
+
+{% if item.registry is defined %}
+FROM {{ item.registry.url }}/{{ item.image }}
+{% else %}
+FROM {{ item.image }}
+{% endif %}
+
+{% if item.env is defined %}
+{% for var, value in item.env.items() %}
+{% if value %}
+ENV {{ var }} {{ value }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+RUN set -ex && \
+{% if item.name == 'centos' or item.name == 'fedora' %}
+	dnf makecache && \
+	dnf --assumeyes install \
+		bash \
+		iproute \
+		openssl \
+		python \
+		python-devel \
+		python3-dnf \
+		sudo
+{% elif item.name == 'ubuntu' %}
+	apt-get update && \
+	apt-get install -y \
+		bash \
+		ca-certificates \
+		init \
+		iproute2 \
+		openssl \
+		python3 \
+		sudo
+{% else %}
+	exit 2
+{% endif %}

@@ -1,0 +1,24 @@
+---
+
+name: "Molecule"
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  molecule:
+    runs-on: "ubuntu-latest"
+    steps:
+      -
+        name: "Checkout ${{ github.repository }}"
+        uses: "actions/checkout@v3"
+      -
+        name: "Ansible Molecule"
+        uses: "gofrolist/molecule-action@v2"
+        with:
+          molecule_args: "-d docker"

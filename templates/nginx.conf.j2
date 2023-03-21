@@ -3,10 +3,10 @@
 
 {% set nginx_config = nginx_config | union([{'events': nginx_config_events}]) -%}
 
-{%- if nginx_config_http_extra is defined -%}
-    {%- set nginx_config_http_extra = nginx_config_http | union(nginx_config_http_extra) -%}
-{%- endif -%}
+{% if nginx_config_http_extra is defined -%}
+{% set nginx_config_http = nginx_config_http | union(nginx_config_http_extra) -%}
+{% endif -%}
 
-{%- set nginx_config = nginx_config | union([{'http': nginx_config_http}]) -%}
+{% set nginx_config = nginx_config | union([{'http': nginx_config_http}]) -%}
 
 {{ nginx_config | encode_nginx }}
